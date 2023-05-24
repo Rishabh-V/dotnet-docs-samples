@@ -15,5 +15,6 @@ import-module -DisableNameChecking ..\..\..\BuildTools.psm1
 
 Set-TestTimeout 7200
 
+dotnet format --check --fix-whitespace --fix-analyzers --verbosity diagnostic
 dotnet restore --force
 dotnet test --no-restore --test-adapter-path:. --logger:junit 2>&1 | %{ "$_" }
