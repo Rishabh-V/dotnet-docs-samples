@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// [START retail_search_product_with_boost_spec]
 // Calls the Retail API to search for products in a catalog and reranks the
 // results boosting or burying the products that matched a given condition.
 
@@ -26,10 +25,17 @@ using System.Linq;
 /// </summary>
 public class SearchWithBoostSpecSample
 {
-    /// <summary>Get search request.</summary>
-    private SearchRequest GetSearchRequest(string query, string condition, float boostStrength, string projectNumber)
+    /// <summary>
+    /// Get search request.
+    /// </summary>
+    /// <param name="query">The query.</param>
+    /// <param name="condition">The required condition.</param>
+    /// <param name="boostStrength">The boost strength.</param>
+    /// <param name="projectId">The current project id.</param>
+    /// <returns>The search request.</returns>
+    private SearchRequest GetSearchRequest(string query, string condition, float boostStrength, string projectId)
     {
-        string defaultSearchPlacement = $"projects/{projectNumber}/locations/global/catalogs/default_catalog/placements/default_search";
+        string defaultSearchPlacement = $"projects/{projectId}/locations/global/catalogs/default_catalog/placements/default_search";
 
         var searchRequest = new SearchRequest
         {
@@ -50,7 +56,7 @@ public class SearchWithBoostSpecSample
             }
         };
 
-        Console.WriteLine("Search. request:");
+        Console.WriteLine("Search request:");
         Console.WriteLine($"Placement: {searchRequest.Placement}");
         Console.WriteLine($"Query: {searchRequest.Query}");
         Console.WriteLine($"VisitorId: {searchRequest.VisitorId}");
@@ -64,9 +70,9 @@ public class SearchWithBoostSpecSample
     /// <summary>
     /// Call the retail search.
     /// </summary>
-    /// <param name="projectNumber">Current project number.</param>
-    /// <returns></returns>
-    public IEnumerable<SearchResponse> Search(string projectNumber)
+    /// <param name="projectId">Current project id.</param>
+    /// <returns>Search result pages.</returns>
+    public IEnumerable<SearchResponse> Search(string projectId)
     {
         // Try different conditions here:
         string condition = "colorFamilies: ANY(\"Blue\")";
@@ -74,11 +80,11 @@ public class SearchWithBoostSpecSample
         string query = "Tee";
 
         SearchServiceClient client = SearchServiceClient.Create();
-        SearchRequest searchRequest = GetSearchRequest(query, condition, boost, projectNumber);
+        SearchRequest searchRequest = GetSearchRequest(query, condition, boost, projectId);
         IEnumerable<SearchResponse> searchResultPages = client.Search(searchRequest).AsRawResponses();
-        SearchResponse firstPage = searchResultPages.FirstOrDefault();
+        SearchResponse firstPage = searchResultPages.First();
 
-        if (firstPage is null)
+        if (firstPage.TotalSize == 0)
         {
             Console.WriteLine("The search operation returned no matching results.");
         }
@@ -90,16 +96,19 @@ public class SearchWithBoostSpecSample
             Console.WriteLine($"TotalSize: {firstPage.TotalSize},");
             Console.WriteLine("Items found in first page:");
 
+            int itemCount = 0;
             foreach (SearchResponse.Types.SearchResult item in firstPage)
             {
+                itemCount++;
+                Console.WriteLine($"Item {itemCount}: ");
                 Console.WriteLine(item);
+                Console.WriteLine();
             }
         }
 
         return searchResultPages;
     }
 }
-// [END retail_search_product_with_boost_spec]
 
 /// <summary>
 /// Search with boost spec tutorial.
@@ -109,8 +118,8 @@ public static class SearchWithBoostSpecTutorial
     [Runner.Attributes.Example]
     public static IEnumerable<SearchResponse> Search()
     {
-        var projectNumber = Environment.GetEnvironmentVariable("PROJECT_NUMBER");
+        var projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
         var sample = new SearchWithBoostSpecSample();
-        return sample.Search(projectNumber);
+        return sample.Search(projectId);
     }
 }

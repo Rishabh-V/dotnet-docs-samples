@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// [START retail_search_for_products_with_query_expansion_specification]
 // Call Retail API to search for a products in a catalog,
 // enabling the query expansion feature to let the Google Retail Search build an automatic query expansion.
 
@@ -26,10 +25,16 @@ using System.Linq;
 /// </summary>
 public class SearchWithQueryExpansionSample 
 {
-    /// <summary>Get search request.</summary>
-    private static SearchRequest GetSearchRequest(string query, SearchRequest.Types.QueryExpansionSpec.Types.Condition condition, string projectNumber)
+    /// <summary>
+    /// Get search request.
+    /// </summary>
+    /// <param name="query">The query.</param>
+    /// <param name="condition">The query expansion condition.</param>
+    /// <param name="projectId">The current project id.</param>
+    /// <returns>The search request.</returns>
+    private static SearchRequest GetSearchRequest(string query, SearchRequest.Types.QueryExpansionSpec.Types.Condition condition, string projectId)
     { 
-        string defaultSearchPlacement = $"projects/{projectNumber}/locations/global/catalogs/default_catalog/placements/default_search";
+        string defaultSearchPlacement = $"projects/{projectId}/locations/global/catalogs/default_catalog/placements/default_search";
 
         var searchRequest = new SearchRequest()
         {
@@ -40,7 +45,7 @@ public class SearchWithQueryExpansionSample
             PageSize = 10
         };
 
-        Console.WriteLine("Search. request:");
+        Console.WriteLine("Search request:");
         Console.WriteLine($"Placement: {searchRequest.Placement}");
         Console.WriteLine($"Query: {searchRequest.Query}");
         Console.WriteLine($"VisitorId: {searchRequest.VisitorId}");
@@ -53,20 +58,20 @@ public class SearchWithQueryExpansionSample
     /// <summary>
     /// Call the retail search.
     /// </summary>
-    /// <param name="projectNumber">Current project number.</param>
-    /// <returns></returns>
-    public IEnumerable<SearchResponse> Search(string projectNumber)
+    /// <param name="projectId">Current project id.</param>
+    /// <returns>Search result pages.</returns>
+    public IEnumerable<SearchResponse> Search(string projectId)
     {
         // Try different query expansion condition here:
         var condition = SearchRequest.Types.QueryExpansionSpec.Types.Condition.Auto;
         string query = "Google Youth Hero Tee Grey";
 
         SearchServiceClient client = SearchServiceClient.Create();
-        SearchRequest searchRequest = GetSearchRequest(query, condition, projectNumber);
+        SearchRequest searchRequest = GetSearchRequest(query, condition, projectId);
         IEnumerable<SearchResponse> searchResultPages = client.Search(searchRequest).AsRawResponses();
-        SearchResponse firstPage = searchResultPages.FirstOrDefault();
+        SearchResponse firstPage = searchResultPages.First();
 
-        if (firstPage is null)
+        if (firstPage.TotalSize == 0)
         {
             Console.WriteLine("The search operation returned no matching results.");
         }
@@ -78,16 +83,19 @@ public class SearchWithQueryExpansionSample
             Console.WriteLine($"TotalSize: {firstPage.TotalSize},");
             Console.WriteLine("Items found in first page:");
 
+            int itemCount = 0;
             foreach (SearchResponse.Types.SearchResult item in firstPage)
             {
+                itemCount++;
+                Console.WriteLine($"Item {itemCount}: ");
                 Console.WriteLine(item);
+                Console.WriteLine();
             }
         }
 
         return searchResultPages;
     }
 }
-// [END retail_search_for_products_with_query_expansion_specification]
 
 /// <summary>
 /// Search with query expansion tutorial.
@@ -97,8 +105,8 @@ public static class SearchWithQueryExpansionTutorial
     [Runner.Attributes.Example]
     public static IEnumerable<SearchResponse> Search()
     {
-        var projectNumber = Environment.GetEnvironmentVariable("PROJECT_NUMBER");
+        var projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
         var sample = new SearchWithQueryExpansionSample();
-        return sample.Search(projectNumber);
+        return sample.Search(projectId);
     }
 }

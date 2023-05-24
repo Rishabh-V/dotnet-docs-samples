@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>library</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.Iam.v1" Version="1.56.0.2596" />
-    <PackageReference Include="Google.Apis.Cloudresourcemanager.v1" Version="1.56.0.2565" />
+    <PackageReference Include="Google.Apis.Iam.v1" Version="1.60.0.3031" />
+    <PackageReference Include="Google.Apis.Cloudresourcemanager.v1" Version="1.60.0.2950" />
   </ItemGroup>
 
 </Project>

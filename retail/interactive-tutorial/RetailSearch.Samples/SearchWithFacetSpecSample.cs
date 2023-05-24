@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// [START retail_search_product_with_facet_spec]
-
 using Google.Cloud.Retail.V2;
 using System;
 using System.Collections.Generic;
@@ -24,10 +22,16 @@ using System.Linq;
 /// </summary>
 public class SearchWithFacetSpecSample
 {
-    /// <summary>Get search request.</summary>
-    private SearchRequest GetSearchRequest(string query, string facetKeyParam, string projectNumber)
+    /// <summary>
+    /// Get search request.
+    /// </summary>
+    /// <param name="query">The query.</param>
+    /// <param name="facetKeyParam">The facet key parameter.</param>
+    /// <param name="projectId">The current project id.</param>
+    /// <returns>The search request.</returns>
+    private SearchRequest GetSearchRequest(string query, string facetKeyParam, string projectId)
     {
-        string defaultSearchPlacement = $"projects/{projectNumber}/locations/global/catalogs/default_catalog/placements/default_search";
+        string defaultSearchPlacement = $"projects/{projectId}/locations/global/catalogs/default_catalog/placements/default_search";
 
         var facetKey = new SearchRequest.Types.FacetSpec.Types.FacetKey
         {
@@ -52,7 +56,7 @@ public class SearchWithFacetSpecSample
             }
         };
 
-        Console.WriteLine("Search. request:");
+        Console.WriteLine("Search request:");
         Console.WriteLine($"Placement: {searchRequest.Placement}");
         Console.WriteLine($"Query: {searchRequest.Query}");
         Console.WriteLine($"VisitorId: {searchRequest.VisitorId}");
@@ -66,20 +70,20 @@ public class SearchWithFacetSpecSample
     /// <summary>
     /// Call the retail search.
     /// </summary>
-    /// <param name="projectNumber">Current project number.</param>
-    /// <returns></returns>
-    public IEnumerable<SearchResponse> Search(string projectNumber)
+    /// <param name="projectId">Current project id.</param>
+    /// <returns>Search result pages.</returns>
+    public IEnumerable<SearchResponse> Search(string projectId)
     {
         // Try different facets here:
         string facetKey = "colorFamilies";
         string query = "Tee";
 
         SearchServiceClient client = SearchServiceClient.Create();
-        SearchRequest searchRequest = GetSearchRequest(query, facetKey, projectNumber);
+        SearchRequest searchRequest = GetSearchRequest(query, facetKey, projectId);
         IEnumerable<SearchResponse> searchResultPages = client.Search(searchRequest).AsRawResponses();
-        SearchResponse firstPage = searchResultPages.FirstOrDefault();
+        SearchResponse firstPage = searchResultPages.First();
 
-        if (firstPage is null)
+        if (firstPage.TotalSize == 0)
         {
             Console.WriteLine("The search operation returned no matching results.");
         }
@@ -92,16 +96,30 @@ public class SearchWithFacetSpecSample
             Console.WriteLine($"TotalSize: {firstPage.TotalSize},");
             Console.WriteLine("Items found in first page:");
 
+            int itemCount = 0;
             foreach (SearchResponse.Types.SearchResult item in firstPage)
             {
+                itemCount++;
+                Console.WriteLine($"Item {itemCount}: ");
                 Console.WriteLine(item);
+                Console.WriteLine();
+            }
+            Console.WriteLine("Facets:");
+            foreach (var facet in firstPage.Facets)
+            {
+                Console.WriteLine($"key: {facet.Key}");
+                Console.WriteLine("values:");
+                foreach (var facetValue in facet.Values)
+                {
+                    Console.WriteLine(facetValue);
+                }
+                Console.WriteLine();
             }
         }
 
         return searchResultPages;
     }
 }
-// [END retail_search_product_with_facet_spec]
 
 /// <summary>
 /// Search with facet spec tutorial.
@@ -111,8 +129,8 @@ public static class SearchWithFacetSpecTutorial
     [Runner.Attributes.Example]
     public static IEnumerable<SearchResponse> Search()
     {
-        var projectNumber = Environment.GetEnvironmentVariable("PROJECT_NUMBER");
+        var projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
         var sample = new SearchWithFacetSpecSample();
-        return sample.Search(projectNumber);
+        return sample.Search(projectId);
     }
 }

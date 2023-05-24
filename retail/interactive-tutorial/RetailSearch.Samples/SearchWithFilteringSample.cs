@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// [START retail_search_for_products_with_filter]
 // Call Retail API to search for a products in a catalog, filter the results by different product fields.
 
 using Google.Cloud.Retail.V2;
@@ -25,10 +24,16 @@ using System.Linq;
 /// </summary>
 public class SearchWithFilteringSample
 {
-    /// <summary>Get search request.</summary>
-    private static SearchRequest GetSearchRequest(string query, string filter, string projectNumber)
+    /// <summary>
+    /// Get search request.
+    /// </summary>
+    /// <param name="query">The query.</param>
+    /// <param name="filter">The facet key parameter.</param>
+    /// <param name="projectId">The current project id.</param>
+    /// <returns>The search request.</returns>
+    private static SearchRequest GetSearchRequest(string query, string filter, string projectId)
     {
-        string defaultSearchPlacement = $"projects/{projectNumber}/locations/global/catalogs/default_catalog/placements/default_search";
+        string defaultSearchPlacement = $"projects/{projectId}/locations/global/catalogs/default_catalog/placements/default_search";
 
         var searchRequest = new SearchRequest()
         {
@@ -40,7 +45,7 @@ public class SearchWithFilteringSample
             CanonicalFilter = "queryExpansion"
         };
 
-        Console.WriteLine("Search. request:");
+        Console.WriteLine("Search request:");
         Console.WriteLine($"Placement: {searchRequest.Placement}");
         Console.WriteLine($"Query: {searchRequest.Query}");
         Console.WriteLine($"VisitorId: {searchRequest.VisitorId}");
@@ -53,20 +58,20 @@ public class SearchWithFilteringSample
     /// <summary>
     /// Call the retail search.
     /// </summary>
-    /// <param name="projectNumber">Current project number.</param>
-    /// <returns></returns>
-    public IEnumerable<SearchResponse> Search(string projectNumber)
+    /// <param name="projectId">Current project id.</param>
+    /// <returns>Search result pages.</returns>
+    public IEnumerable<SearchResponse> Search(string projectId)
     {
         // Try different filter expressions here:
         string filter = "(colorFamily: ANY(\"Black\"))";
         string query = "Tee";
 
         SearchServiceClient client = SearchServiceClient.Create();
-        SearchRequest searchRequest = GetSearchRequest(query, filter, projectNumber);
+        SearchRequest searchRequest = GetSearchRequest(query, filter, projectId);
         IEnumerable<SearchResponse> searchResultPages = client.Search(searchRequest).AsRawResponses();
-        SearchResponse firstPage = searchResultPages.FirstOrDefault();
+        SearchResponse firstPage = searchResultPages.First();
 
-        if (firstPage is null)
+        if (firstPage.TotalSize == 0)
         {
             Console.WriteLine("The search operation returned no matching results.");
         }
@@ -78,16 +83,19 @@ public class SearchWithFilteringSample
             Console.WriteLine($"TotalSize: {firstPage.TotalSize},");
             Console.WriteLine("Items found in first page:");
 
+            int itemCount = 0;
             foreach (SearchResponse.Types.SearchResult item in firstPage)
             {
+                itemCount++;
+                Console.WriteLine($"Item {itemCount}: ");
                 Console.WriteLine(item);
+                Console.WriteLine();
             }
         }
 
         return searchResultPages;
     }
 }
-// [END retail_search_for_products_with_filter]
 
 /// <summary>
 /// Search with filtering tutorial.
@@ -97,8 +105,8 @@ public static class SearchWithFilteringTutorial
     [Runner.Attributes.Example]
     public static IEnumerable<SearchResponse> Search()
     {
-        var projectNumber = Environment.GetEnvironmentVariable("PROJECT_NUMBER");
+        var projectId = Environment.GetEnvironmentVariable("GOOGLE_PROJECT_ID");
         var sample = new SearchWithFilteringSample();
-        return sample.Search(projectNumber);
+        return sample.Search(projectId);
     }
 }

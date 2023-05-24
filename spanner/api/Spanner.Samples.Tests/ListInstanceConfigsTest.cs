@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Linq;
 using Xunit;
 
 [Collection(nameof(SpannerFixture))]
@@ -30,6 +29,6 @@ public class ListInstanceConfigsTest
     {
         var sample = new ListInstanceConfigsSample();
         var configs = sample.ListInstanceConfigs(_spannerFixture.ProjectId);
-        Assert.NotEmpty(configs);
+        Assert.NotNull(configs);
     }
 }

@@ -15,6 +15,7 @@
 using Google;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Storage.v1.Data;
+using Google.Cloud.Iam.V1;
 using Google.Cloud.PubSub.V1;
 using Google.Cloud.Storage.V1;
 using GoogleCloudSamples;
@@ -24,6 +25,7 @@ using System.Net;
 using System.Threading;
 using Xunit;
 using Xunit.Sdk;
+using static Google.Apis.Storage.v1.Data.Bucket;
 
 [CollectionDefinition(nameof(StorageFixture))]
 public class StorageFixture : IDisposable, ICollectionFixture<StorageFixture>
@@ -197,10 +199,10 @@ public class StorageFixture : IDisposable, ICollectionFixture<StorageFixture>
         } while (true);
     }
 
-    public void CreateBucket(string bucketName, string location = null)
+    public void CreateBucket(string bucketName, string location = null, AutoclassData autoclassData = null)
     {
         StorageClient storageClient = StorageClient.Create();
-        storageClient.CreateBucket(ProjectId, new Bucket { Name = bucketName, Location = location });
+        storageClient.CreateBucket(ProjectId, new Bucket { Name = bucketName, Location = location, Autoclass = autoclassData });
         SleepAfterBucketCreateUpdateDelete();
         TempBucketNames.Add(bucketName);
     }
@@ -246,8 +248,12 @@ public class StorageFixture : IDisposable, ICollectionFixture<StorageFixture>
 
         var policy = new Google.Cloud.Iam.V1.Policy();
         policy.AddRoleMember("roles/pubsub.publisher", "allUsers");
-        publisherClient.SetIamPolicy(topicName, policy);
-        
+        publisherClient.IAMPolicyClient.SetIamPolicy(new SetIamPolicyRequest
+        {
+            ResourceAsResourceName = topicName,
+            Policy = policy
+        });
+
         return topic;
     }
 }
