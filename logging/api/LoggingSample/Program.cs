@@ -20,6 +20,7 @@ using Google.Api.Gax.Grpc;
 using Google.Api.Gax.ResourceNames;
 using Google.Cloud.Logging.Type;
 using Google.Cloud.Logging.V2;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using System;
 using System.Collections.Generic;
@@ -72,11 +73,21 @@ namespace GoogleCloudSamples
         {
             var client = LoggingServiceV2Client.Create();
             LogName logName = new LogName(s_projectId, logId);
+            var jsonPayload = new Struct()
+            {
+                Fields =
+                {
+                    { "name", Value.ForString("King Arthur") },
+                    { "quest", Value.ForString("Find the Holy Grail") },
+                    { "favorite_color", Value.ForString("Blue") },
+                    { "message", Value.ForString(message) }
+                }
+            };
             LogEntry logEntry = new LogEntry
             {
                 LogNameAsLogName = logName,
                 Severity = LogSeverity.Info,
-                TextPayload = $"{typeof(LoggingSample).FullName} - {message}"
+                JsonPayload = jsonPayload
             };
             MonitoredResource resource = new MonitoredResource { Type = "global" };
             IDictionary<string, string> entryLabels = new Dictionary<string, string>

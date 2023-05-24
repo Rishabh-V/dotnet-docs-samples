@@ -1,17 +1,11 @@
-# Cloud Logging Sample
+# .NET Cloud Logging Samples
 
-A sample demonstrating how to invoke Google Cloud Logging from C# using ASP.NET Core.
+A collection of samples that demonstrate how to invoke [Google Cloud Logging](https://cloud.google.com/logging/docs/) from C#.
 
-This sample requires [.NET Core 2.0](
-    https://www.microsoft.com/net/core) or later.  That means using
-[Visual Studio 2017](
-    https://www.visualstudio.com/), or the command line.  Visual Studio 2015 users
-can use [this older sample](
-    https://github.com/GoogleCloudPlatform/dotnet-docs-samples/tree/vs2015/logging/api).
-
-## Links
-
-- [Cloud Logging Reference Docs](https://cloud.google.com/logging/docs/)
+The samples require [.NET 6](
+     https://dotnet.microsoft.com/en-us/download/dotnet/6.0) or later.  That means using
+[Visual Studio 2022](
+    https://www.visualstudio.com/), or the command line.
 
 ## Build and Run
 
